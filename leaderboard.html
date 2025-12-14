@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Leaderboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+body{
+  margin:0;
+  height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:linear-gradient(#1a2f66,#0d1b3d);
+  color:white;
+  font-family:Arial;
+}
+.box{
+  background:rgba(255,255,255,0.1);
+  padding:25px;
+  border-radius:15px;
+  width:300px;
+  text-align:center;
+}
+.btn{
+  margin-top:15px;
+  padding:10px;
+  border:0;
+  border-radius:10px;
+  background:#e6004c;
+  color:white;
+}
+</style>
+</head>
+
+<body>
+<div class="box">
+  <h2>🏆 Leaderboard</h2>
+  <p id="scoreText"></p>
+  <button class="btn" onclick="location.href='index.html'">Back</button>
+</div>
+
+<script>
+const score = localStorage.getItem("lastScore") || 0;
+document.getElementById("scoreText").textContent =
+  "Your Last Score: " + score;
+</script>
+
+</body>
+</html>

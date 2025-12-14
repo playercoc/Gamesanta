@@ -62,14 +62,8 @@ body{
   cursor:pointer;
 }
 
-#pauseBtn{
-  background:#ffd000;
-}
-
-#backBtn{
-  background:#ff4d4d;
-  color:white;
-}
+#pauseBtn{ background:#ffd000; }
+#backBtn{ background:#ff4d4d; color:white; }
 
 /* Game Over */
 #gameOver{
@@ -99,6 +93,10 @@ body{
   font-size:16px;
   cursor:pointer;
 }
+
+.btn.submit{
+  background:#00c853;
+}
 </style>
 </head>
 
@@ -120,19 +118,30 @@ body{
   <div class="box">
     <h2>💥 Game Over</h2>
     <p>Final Score: <span id="finalScore"></span></p>
+    <button class="btn submit" id="submitBtn" onclick="submitScore()">🏆 Submit Score</button>
     <button class="btn" onclick="restart()">Restart</button>
     <button class="btn" onclick="backMenu()">Menu</button>
   </div>
 </div>
 
 <script>
+// 🔒 WAJIB CONNECT WALLET
+const wallet = localStorage.getItem("wallet");
+if(!wallet){
+  alert("Connect wallet terlebih dahulu!");
+  location.href="index.html";
+}
+
 let score = 0;
 let speed = 4;
 let isPaused = false;
 let isGameOver = false;
+let isSubmitted = false;
 
 const basket = document.getElementById("basket");
 const pauseBtn = document.getElementById("pauseBtn");
+const scoreEl = document.getElementById("score");
+const speedEl = document.getElementById("speed");
 
 /* Move basket */
 document.addEventListener("mousemove", e=>{
@@ -174,7 +183,6 @@ function spawnItem(){
     y+=speed;
     item.style.top=y+"px";
 
-    // Masuk keranjang
     if(hit(item,basket)){
       clearInterval(fall);
       item.remove();
@@ -183,24 +191,20 @@ function spawnItem(){
         endGame();
       }else{
         score+=10;
-        document.getElementById("score").textContent=score;
+        scoreEl.textContent=score;
         speed=4+Math.floor(score/40);
-        document.getElementById("speed").textContent=speed;
+        speedEl.textContent=speed;
       }
     }
 
-    // Hadiah terlewat
     if(y>window.innerHeight){
       clearInterval(fall);
       item.remove();
-      if(item.dataset.type==="gift"){
-        endGame();
-      }
+      if(item.dataset.type==="gift") endGame();
     }
   },20);
 }
 
-/* Spawn loop */
 setInterval(spawnItem,700);
 
 /* Pause */
@@ -219,14 +223,31 @@ function endGame(){
   localStorage.setItem("lastScore",score);
 }
 
-/* Navigation */
-function restart(){
-  location.reload();
+/* SUBMIT SCORE */
+function submitScore(){
+  if(isSubmitted) return;
+
+  let leaderboard = JSON.parse(localStorage.getItem("leaderboard")) || [];
+  const data = leaderboard.find(e=>e.wallet===wallet);
+
+  if(data){
+    if(score > data.score) data.score = score;
+  }else{
+    leaderboard.push({ wallet, score });
+  }
+
+  localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
+
+  isSubmitted = true;
+  const btn = document.getElementById("submitBtn");
+  btn.textContent = "✅ Score Submitted";
+  btn.disabled = true;
+  btn.style.opacity = 0.6;
 }
 
-function backMenu(){
-  location.href="index.html";
-}
+/* Navigation */
+function restart(){ location.reload(); }
+function backMenu(){ location.href="index.html"; }
 </script>
 
 </body>

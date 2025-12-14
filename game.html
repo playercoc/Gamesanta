@@ -2,67 +2,231 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Christmas Catch - Game</title>
+<title>Christmas Catch 2025</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
 body{
   margin:0;
   background:#0d1b3d;
-  color:white;
-  font-family:Arial;
   overflow:hidden;
+  font-family:Poppins,Arial;
+  color:white;
 }
-#score{
+
+/* HUD */
+#hud{
   position:fixed;
   top:10px;
-  left:10px;
-  font-size:20px;
+  left:0;
+  right:0;
+  display:flex;
+  justify-content:space-around;
+  align-items:center;
+  font-size:18px;
+  z-index:10;
 }
+
+/* Item */
 .item{
   position:absolute;
-  font-size:40px;
+  font-size:36px;
+  user-select:none;
+}
+
+/* Basket Natal */
+#basket{
+  position:fixed;
+  bottom:15px;
+  width:140px;
+  height:60px;
+  font-size:48px;
+  text-align:center;
+  left:50%;
+  transform:translateX(-50%);
+  pointer-events:none;
+  animation:bounce .6s infinite alternate;
+}
+
+@keyframes bounce{
+  from{ transform:translateX(-50%) translateY(0); }
+  to{ transform:translateX(-50%) translateY(-6px); }
+}
+
+/* Buttons */
+#pauseBtn, #backBtn{
+  padding:6px 14px;
+  border:0;
+  border-radius:8px;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+#pauseBtn{
+  background:#ffd000;
+}
+
+#backBtn{
+  background:#ff4d4d;
+  color:white;
+}
+
+/* Game Over */
+#gameOver{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.85);
+  display:none;
+  justify-content:center;
+  align-items:center;
+  z-index:20;
+}
+
+#gameOver .box{
+  background:rgba(255,255,255,.1);
+  padding:30px;
+  border-radius:15px;
+  text-align:center;
+}
+
+.btn{
+  margin-top:10px;
+  padding:10px 18px;
+  background:#e6004c;
+  border:0;
+  border-radius:8px;
+  color:white;
+  font-size:16px;
   cursor:pointer;
 }
 </style>
 </head>
 
 <body>
-<div id="score">Score: 0</div>
+
+<!-- HUD -->
+<div id="hud">
+  <button id="backBtn" onclick="backMenu()">⬅ Menu</button>
+  <div>Score: <span id="score">0</span></div>
+  <div>Speed: <span id="speed">1</span></div>
+  <button id="pauseBtn" onclick="togglePause()">⏸ Pause</button>
+</div>
+
+<!-- Basket -->
+<div id="basket">🎅🛷</div>
+
+<!-- Game Over -->
+<div id="gameOver">
+  <div class="box">
+    <h2>💥 Game Over</h2>
+    <p>Final Score: <span id="finalScore"></span></p>
+    <button class="btn" onclick="restart()">Restart</button>
+    <button class="btn" onclick="backMenu()">Menu</button>
+  </div>
+</div>
 
 <script>
 let score = 0;
+let speed = 4;
+let isPaused = false;
+let isGameOver = false;
 
-function spawnItem(){
-  const item = document.createElement("div");
-  item.className = "item";
-  item.textContent = "🎁";
-  item.style.left = Math.random() * (window.innerWidth - 50) + "px";
-  item.style.top = "-50px";
-  document.body.appendChild(item);
+const basket = document.getElementById("basket");
+const pauseBtn = document.getElementById("pauseBtn");
 
-  let fall = setInterval(()=>{
-    item.style.top = item.offsetTop + 5 + "px";
-    if(item.offsetTop > window.innerHeight){
-      clearInterval(fall);
-      item.remove();
-    }
-  },30);
+/* Move basket */
+document.addEventListener("mousemove", e=>{
+  if(isPaused || isGameOver) return;
+  basket.style.left = e.clientX - basket.offsetWidth/2 + "px";
+});
+document.addEventListener("touchmove", e=>{
+  if(isPaused || isGameOver) return;
+  basket.style.left = e.touches[0].clientX - basket.offsetWidth/2 + "px";
+});
 
-  item.onclick = ()=>{
-    score += 10;
-    document.getElementById("score").textContent = "Score: " + score;
-    clearInterval(fall);
-    item.remove();
-  };
+/* Collision */
+function hit(a,b){
+  const r1=a.getBoundingClientRect();
+  const r2=b.getBoundingClientRect();
+  return !(r1.right<r2.left||r1.left>r2.right||r1.bottom<r2.top||r1.top>r2.bottom);
 }
 
-setInterval(spawnItem,1000);
+/* Spawn item */
+function spawnItem(){
+  if(isPaused || isGameOver) return;
 
-// save score on exit
-window.onbeforeunload = ()=>{
-  localStorage.setItem("lastScore", score);
-};
+  const item=document.createElement("div");
+  item.className="item";
+
+  const isBomb=Math.random()<0.25;
+  item.textContent=isBomb?"💣":"🎁";
+  item.dataset.type=isBomb?"bomb":"gift";
+
+  item.style.left=Math.random()*(window.innerWidth-40)+"px";
+  item.style.top="-40px";
+  document.body.appendChild(item);
+
+  let y=-40;
+  const fall=setInterval(()=>{
+    if(isGameOver){ clearInterval(fall); item.remove(); return; }
+    if(isPaused) return;
+
+    y+=speed;
+    item.style.top=y+"px";
+
+    // Masuk keranjang
+    if(hit(item,basket)){
+      clearInterval(fall);
+      item.remove();
+
+      if(item.dataset.type==="bomb"){
+        endGame();
+      }else{
+        score+=10;
+        document.getElementById("score").textContent=score;
+        speed=4+Math.floor(score/40);
+        document.getElementById("speed").textContent=speed;
+      }
+    }
+
+    // Hadiah terlewat
+    if(y>window.innerHeight){
+      clearInterval(fall);
+      item.remove();
+      if(item.dataset.type==="gift"){
+        endGame();
+      }
+    }
+  },20);
+}
+
+/* Spawn loop */
+setInterval(spawnItem,700);
+
+/* Pause */
+function togglePause(){
+  if(isGameOver) return;
+  isPaused=!isPaused;
+  pauseBtn.textContent=isPaused?"▶ Resume":"⏸ Pause";
+}
+
+/* Game over */
+function endGame(){
+  if(isGameOver) return;
+  isGameOver=true;
+  document.getElementById("finalScore").textContent=score;
+  document.getElementById("gameOver").style.display="flex";
+  localStorage.setItem("lastScore",score);
+}
+
+/* Navigation */
+function restart(){
+  location.reload();
+}
+
+function backMenu(){
+  location.href="index.html";
+}
 </script>
 
 </body>

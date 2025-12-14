@@ -20,8 +20,17 @@ body{
   background:rgba(255,255,255,0.1);
   padding:25px;
   border-radius:15px;
-  width:300px;
+  width:320px;
   text-align:center;
+}
+.row{
+  display:flex;
+  justify-content:space-between;
+  margin:6px 0;
+  font-size:14px;
+}
+.rank{
+  font-weight:bold;
 }
 .btn{
   margin-top:15px;
@@ -30,6 +39,11 @@ body{
   border-radius:10px;
   background:#e6004c;
   color:white;
+  cursor:pointer;
+}
+.empty{
+  opacity:.7;
+  font-size:14px;
 }
 </style>
 </head>
@@ -37,14 +51,32 @@ body{
 <body>
 <div class="box">
   <h2>🏆 Leaderboard</h2>
-  <p id="scoreText"></p>
-  <button class="btn" onclick="location.href='index.html'">Back</button>
+  <div id="board"></div>
+  <button class="btn" onclick="location.href='index.html'">⬅ Back</button>
 </div>
 
 <script>
-const score = localStorage.getItem("lastScore") || 0;
-document.getElementById("scoreText").textContent =
-  "Your Last Score: " + score;
+let leaderboard = JSON.parse(localStorage.getItem("leaderboard")) || [];
+
+// Urutkan score tertinggi
+leaderboard.sort((a,b)=>b.score - a.score);
+
+const board = document.getElementById("board");
+
+if(leaderboard.length === 0){
+  board.innerHTML = "<p class='empty'>No data yet</p>";
+}else{
+  leaderboard.forEach((e,i)=>{
+    const row = document.createElement("div");
+    row.className = "row";
+    row.innerHTML = `
+      <div class="rank">#${i+1}</div>
+      <div>${e.wallet.slice(0,6)}...${e.wallet.slice(-4)}</div>
+      <div>${e.score}</div>
+    `;
+    board.appendChild(row);
+  });
+}
 </script>
 
 </body>

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Christmas Catch - Game</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+body{
+  margin:0;
+  background:#0d1b3d;
+  color:white;
+  font-family:Arial;
+  overflow:hidden;
+}
+#score{
+  position:fixed;
+  top:10px;
+  left:10px;
+  font-size:20px;
+}
+.item{
+  position:absolute;
+  font-size:40px;
+  cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+<div id="score">Score: 0</div>
+
+<script>
+let score = 0;
+
+function spawnItem(){
+  const item = document.createElement("div");
+  item.className = "item";
+  item.textContent = "🎁";
+  item.style.left = Math.random() * (window.innerWidth - 50) + "px";
+  item.style.top = "-50px";
+  document.body.appendChild(item);
+
+  let fall = setInterval(()=>{
+    item.style.top = item.offsetTop + 5 + "px";
+    if(item.offsetTop > window.innerHeight){
+      clearInterval(fall);
+      item.remove();
+    }
+  },30);
+
+  item.onclick = ()=>{
+    score += 10;
+    document.getElementById("score").textContent = "Score: " + score;
+    clearInterval(fall);
+    item.remove();
+  };
+}
+
+setInterval(spawnItem,1000);
+
+// save score on exit
+window.onbeforeunload = ()=>{
+  localStorage.setItem("lastScore", score);
+};
+</script>
+
+</body>
+</html>

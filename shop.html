@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Shop</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+body{
+  margin:0;
+  height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:linear-gradient(#0d1b3d,#1a2f66);
+  color:white;
+  font-family:Arial;
+}
+.box{
+  background:rgba(255,255,255,0.1);
+  padding:25px;
+  border-radius:15px;
+  width:320px;
+}
+.skin{
+  display:flex;
+  justify-content:space-between;
+  margin:10px 0;
+}
+.btn{
+  padding:5px 10px;
+  background:#e6004c;
+  border:0;
+  border-radius:6px;
+  color:white;
+}
+</style>
+</head>
+
+<body>
+<div class="box">
+  <h2>🛍️ Skins</h2>
+
+  <div class="skin">
+    <span>🎁 Default</span>
+    <button class="btn">Owned</button>
+  </div>
+
+  <div class="skin">
+    <span>🎄 Tree</span>
+    <button class="btn">Buy</button>
+  </div>
+
+  <div class="skin">
+    <span>🎅 Santa</span>
+    <button class="btn">Buy</button>
+  </div>
+
+  <button class="btn" style="width:100%;margin-top:15px"
+    onclick="location.href='index.html'">Back</button>
+</div>
+</body>
+</html>

@@ -1,42 +1,45 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Christmas Catch 2025</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <style>
-    body{
-      margin:0;
-      height:100vh;
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      background:linear-gradient(#0d1b3d,#1a2f66);
-      font-family:Poppins,Arial;
-      color:white;
-      text-align:center;
-    }
-    .box{
-      background:rgba(255,255,255,0.1);
-      padding:30px;
-      border-radius:15px;
-      backdrop-filter:blur(6px);
-      width:90%;
-      max-width:400px;
-    }
-    .btn{
-      width:100%;
-      margin-top:15px;
-      padding:14px;
-      font-size:18px;
-      background:#e6004c;
-      border:0;
-      border-radius:10px;
-      color:white;
-      cursor:pointer;
-    }
-  </style>
+<meta charset="UTF-8">
+<title>Christmas Catch 2025</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body{
+  margin:0;
+  height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:linear-gradient(#0d1b3d,#1a2f66);
+  font-family:Poppins,Arial;
+  color:white;
+  text-align:center;
+}
+.box{
+  background:rgba(255,255,255,.1);
+  padding:30px;
+  border-radius:15px;
+  width:90%;
+  max-width:400px;
+}
+.btn{
+  width:100%;
+  margin-top:15px;
+  padding:14px;
+  font-size:18px;
+  background:#e6004c;
+  border:0;
+  border-radius:10px;
+  color:white;
+  cursor:pointer;
+}
+.wallet{
+  margin-top:10px;
+  font-size:14px;
+  opacity:.9;
+}
+</style>
 </head>
 <body>
 
@@ -44,10 +47,60 @@
   <h1>🎄 Christmas Catch 2025</h1>
   <p>Official Tournament</p>
 
-  <button class="btn" onclick="location.href='game.html'">Start Game</button>
+  <button class="btn" onclick="startGame()">Start Game</button>
   <button class="btn" onclick="location.href='leaderboard.html'">Leaderboard</button>
-  <button class="btn" onclick="location.href='shop.html'">Shop (Skins)</button>
+
+  <button class="btn" id="walletBtn" onclick="connectWallet()">🔗 Connect Wallet</button>
+  <div class="wallet" id="walletInfo"></div>
 </div>
 
+<script>
+const SOMNIA = {
+  chainId: "0xc4a8",
+  chainName: "Somnia Testnet",
+  nativeCurrency: { name:"STT", symbol:"STT", decimals:18 },
+  rpcUrls:["https://dream-rpc.somnia.network"],
+  blockExplorerUrls:["https://shannon-explorer.somnia.network/"]
+};
+
+async function connectWallet(){
+  if(!window.ethereum) return alert("MetaMask tidak ditemukan");
+
+  try{
+    await ethereum.request({
+      method:"wallet_switchEthereumChain",
+      params:[{chainId:SOMNIA.chainId}]
+    });
+  }catch(e){
+    if(e.code===4902){
+      await ethereum.request({
+        method:"wallet_addEthereumChain",
+        params:[SOMNIA]
+      });
+    }
+  }
+
+  const acc = await ethereum.request({method:"eth_requestAccounts"});
+  localStorage.setItem("wallet", acc[0]);
+  updateWalletUI();
+}
+
+function updateWalletUI(){
+  const w = localStorage.getItem("wallet");
+  if(!w) return;
+  walletBtn.textContent="✅ Wallet Connected";
+  walletInfo.textContent="Wallet: "+w.slice(0,6)+"..."+w.slice(-4);
+}
+
+function startGame(){
+  if(!localStorage.getItem("wallet")){
+    alert("Connect wallet terlebih dahulu!");
+    return;
+  }
+  location.href="game.html";
+}
+
+updateWalletUI();
+</script>
 </body>
 </html>
